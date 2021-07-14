@@ -21,13 +21,45 @@ function ProfileSidebar(propriedades) {
   )
 }
 
+function ProfileRelationsBox(properties) {
+  return (
+    <ProfileRelationsBoxWrapper>        
+      <h2 className="smallTitle">
+        {properties.title} ({properties.items.length})
+      </h2>
+
+      <ul>
+        {properties.items.map((itemAtual) => {
+          return (
+            <li key={itemAtual.id}>
+              <a href={itemAtual.html_url}>
+                <img src={itemAtual.avatar_url} />
+                <span>{itemAtual.login}</span>
+              </a>
+            </li>
+          )
+        })}
+      </ul>
+    </ProfileRelationsBoxWrapper>  
+  )
+}
+
 export default function Home() {
   const usuarioAleatorio = 'efcjunior';
+
   const [comunidades, setComunidades] = React.useState([{
     id: new Date().toISOString(),
     title: 'Eu odeio acordar cedo',
     image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
   }]);
+
+  const seguidores = [{
+    login: 'ronenhamias',
+    id: '1706296',
+    avatar_url: 'https://avatars.githubusercontent.com/u/1706296?v=4',
+    html_url: 'https://github.com/ronenhamias'
+  }];
+
   //const comunidades = ['AluraKut'];
   const pessoasFavoritas = [
     'juunegreiros',
@@ -91,7 +123,10 @@ export default function Home() {
             </form>
           </Box>
         </div>
-        <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>
+        <div className="profileRelationsArea" style={{ gridArea: 'profileRelationsArea' }}>          
+        
+        <ProfileRelationsBox title={'Seguidores'} items={seguidores}/>
+
         <ProfileRelationsBoxWrapper>
             <h2 className="smallTitle">
               Comunidades ({comunidades.length})
