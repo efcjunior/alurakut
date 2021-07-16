@@ -4,6 +4,7 @@ import Box from '../src/components/Box';
 import { AlurakutMenu, AlurakutProfileSidebarMenuDefault, OrkutNostalgicIconSet } from '../src/lib/AlurakutCommons';
 import { ProfileRelationsBoxWrapper } from '../src/components/ProfileRelations';
 
+//component functions declaration
 function ProfileSidebar(propriedades) {  
   return (
     <Box as="aside">
@@ -45,30 +46,71 @@ function ProfileRelationsBox(properties) {
 }
 
 export default function Home() {
+  /*local memory variables declaration*/
   const usuarioAleatorio = 'efcjunior';
-
-  const [comunidades, setComunidades] = React.useState([{
-    id: new Date().toISOString(),
-    title: 'Eu odeio acordar cedo',
-    image: 'https://alurakut.vercel.app/capa-comunidade-01.jpg'
-  }]);
-
+  
   const seguidores = [{
     login: 'ronenhamias',
     id: '1706296',
     avatar_url: 'https://avatars.githubusercontent.com/u/1706296?v=4',
     html_url: 'https://github.com/ronenhamias'
   }];
-
+  
   //const comunidades = ['AluraKut'];
-  const pessoasFavoritas = [
-    'juunegreiros',
-    'omariosouto',
-    'peas',
-    'rafaballerini',
-    'marcobrunodev',
-    'felipefialho'
+  const pessoasFavoritas = [    
+    {
+      id: '123456',
+      title: 'juunegreiros'
+    },
+    {
+      id: '123457',
+      title: 'omariosouto'
+    },
+    {
+      id: '123458',
+      title: 'peas'
+    },
+    {
+      id: '123459',
+      title: 'rafaballerini'
+    },
+    {
+      id: '123451',
+      title: 'felipefialho'
+    }   
   ];
+
+  /*react state variables declaration*/
+  const [comunidades, setComunidades] = React.useState([{}]);
+  
+  //Get data from Dato API
+  React.useEffect(function(){
+    fetch('https://graphql.datocms.com',{
+    method: 'POST',
+    headers: {
+      'Authorization': 'c37502b06baf04ecc0676d0fde30c6',
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    },
+    body:JSON.stringify({"query" : `
+        query {
+          allCommunities {
+            id
+            title
+            imageUrl
+            creatorSlug
+          }
+        }`
+  })
+  }).then(
+    function(response){
+      return response.json()
+    }
+  ).then(
+    jsonResponse => setComunidades(jsonResponse.data.allCommunities)
+  )    
+  },[]);
+  
 
   return (
     <>
@@ -87,20 +129,32 @@ export default function Home() {
           </Box>
           <Box>
             <h2 className="subTitle">O que você deseja fazer ?</h2>
-            <form onSubmit={function handleCriaComunidade(e){
-              e.preventDefault();
+            <form onSubmit={
+                function handleCriaComunidade(e){
+                  e.preventDefault();
 
-              const dadosForm = new FormData(e.target);
+                  const dadosForm = new FormData(e.target);
 
-              const comunidade = {
-                id: new Date().toISOString(),
-                title: dadosForm.get('title'),
-                image: dadosForm.get('image')
-              };
+                  const comunidade = {
+                    title: dadosForm.get('title'),
+                    imageUrl: dadosForm.get('image'),
+                    creatorSlug: 'efcjunior'
+                  };
 
-              setComunidades([...comunidades, comunidade]);
-              
-            }}>
+                  fetch('/api/comunidades', {
+                    method:'POST',
+                    headers: {
+                      'Content-Type':'application/json',
+                      'Accept': 'application/json'
+                    },
+                    body:JSON.stringify(comunidade)
+                  }).then(async(response) => {
+                    const comunidadeCadastrada =  await response.json();
+                    console.log(comunidadeCadastrada);
+                    setComunidades([...comunidades, comunidadeCadastrada.registroCriado]);
+                  });                  
+                }}>
+
               <div>
                 <input
                   placeholder="Qual vai ser o nome da sua comunidade ?"
@@ -136,8 +190,8 @@ export default function Home() {
               {comunidades.map((itemAtual) => {
                 return (
                   <li key={itemAtual.id}>
-                    <a href={`/users/${itemAtual.title}`}>
-                      <img src={itemAtual.image} />
+                    <a href={`/communities/${itemAtual.id}`}>
+                      <img src={itemAtual.imageUrl} />
                       <span>{itemAtual.title}</span>
                     </a>
                   </li>
@@ -153,10 +207,10 @@ export default function Home() {
             <ul>
               {pessoasFavoritas.map((itemAtual) => {
                 return (
-                  <li key={itemAtual}>
-                    <a href={`/users/${itemAtual}`}>
-                      <img src={`https://github.com/${itemAtual}.png`} />
-                      <span>{itemAtual}</span>
+                  <li key={itemAtual.id}>
+                    <a href={`/users/${itemAtual.id}`}>
+                      <img src={`https://github.com/${itemAtual.title}.png`} />
+                      <span>{itemAtual.title}</span>
                     </a>
                   </li>
                 )
